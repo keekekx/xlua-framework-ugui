@@ -2038,8 +2038,7 @@ public class Reporter : MonoBehaviour {
             url = System.IO.Path.Combine(streamingAssetsPath, prefFile);
         }
 
-#if !UNITY_2017_1_OR_NEWER
-        if (Application.platform != RuntimePlatform.OSXWebPlayer && Application.platform != RuntimePlatform.WindowsWebPlayer)
+#if UNITY_2017_1_OR_NEWER
             if (!url.Contains("://"))
                 url = "file://" + url;
 #endif
@@ -2048,7 +2047,7 @@ public class Reporter : MonoBehaviour {
        // float startTime = Time.realtimeSinceStartup;
 		WWW www = new WWW( url );
 		yield return www ;
-		
+                Debug.LogError("uil "+url);
 		if( !string.IsNullOrEmpty( www.error ) )
 		{
 			Debug.LogError( www.error );

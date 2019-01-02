@@ -29,11 +29,14 @@ local UINoticeTip = CS.UINoticeTip.Instance
 --region  --私有方法，当前内部使用
 
 -- 激活窗口
+---@param self UIManager
+---@param target UIWindow
 local function ActivateWindow(self, target, ...)
     assert(target)
     assert(target.IsLoading == false, "You can only activate window after prefab locaded!")
     target.Model:Activate(...)
     target.View:SetActive(true)
+    self.activated_windows[target.Name] = target
     self:Broadcast(UIMessageNames.UIFRAME_ON_WINDOW_OPEN, target)
 end
 
@@ -41,6 +44,9 @@ end
 local function Deactivate(self, target)
     target.Model:Deactivate()
     target.View:SetActive(false)
+    Logger.Log(">>>Deactivate")
+    PrintTable(self.activated_windows)
+    self.activated_windows[target.Name] = nil
     self:Broadcast(UIMessageNames.UIFRAME_ON_WINDOW_CLOSE, target)
 end
 
@@ -125,7 +131,10 @@ function UIManager:__init()
     -- 消息中心
     self.ui_message_center = Messenger.New()
     -- 所有存活的窗体
+    ---@type table<int, UIWindow>
     self.windows = {}
+    ---@type table<int, UIWindow>
+    self.activated_windows = {}
     -- 所有可用的层级
     self.layers = {}
     -- 保持Model
@@ -240,7 +249,7 @@ function UIManager:OpenWindow(ui_name, ...)
 
     -- 窗口记录
     local layer = UIConfig[ui_name].Layer
-    if layer == UILayers.BackgroudLayer then
+    if layer == UILayers.BackgroundLayer then
         local bg_index = self:GetLastBgWindowIndexInWindowStack()
         if bg_index == -1 or self.__window_stack[bg_index] ~= target.Name then
             self:AddToWindowStack(target.Name)
@@ -263,7 +272,7 @@ function UIManager:CloseWindow(ui_name)
 
     -- 窗口记录
     local layer = UIConfig[ui_name].Layer
-    if layer == UILayers.BackgroudLayer then
+    if layer == UILayers.BackgroundLayer then
         if target.Name == self.__window_stack[table.count(self.__window_stack)] then
             self:RemoveFormWindowStack(target.Name, true)
             --self:PopWindowStack()
@@ -417,12 +426,21 @@ function UIManager:ClearWindowStack()
     self.__window_stack = {}
 end
 
+-- 查看对应窗口是否显示
+---@param pName string
+function UIManager:IsShowing(pName)
+    assert(pName, "窗口名为空，请检查")
+    PrintTable(self.activated_windows)
+    Logger.Log(">>>>window name %s", self.activated_windows[pName])
+    return self.activated_windows[pName] ~= nil
+end
+
 -- 获取最后添加的一个背景窗口索引
 function UIManager:GetLastBgWindowIndexInWindowStack()
     local bg_index = -1
     for i = 1, table.count(self.__window_stack) do
         local ui_name = self.__window_stack[i]
-        if UIConfig[ui_name].Layer == UILayers.BackgroudLayer then
+        if UIConfig[ui_name].Layer == UILayers.BackgroundLayer then
             bg_index = i
         end
     end
@@ -498,6 +516,7 @@ end
 function UIManager:__delete()
     self.ui_message_center = nil
     self.windows = nil
+    self.activated_windows = nil
     self.layers = nil
     self.keep_model = nil
 end
