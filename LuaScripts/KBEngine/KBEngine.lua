@@ -43,7 +43,7 @@ KBEngineLua.entity_type = "";
 
 KBEngineLua.controlledEntities = {};
 
-KBEngineLua.entityServerPos = Vector3.New(0.0, 0.0, 0.0);
+KBEngineLua.entityServerPos = Vector3(0.0, 0.0, 0.0);
 
 KBEngineLua.syncPlayer = true;
 
@@ -131,7 +131,7 @@ KBEngineLua.int82angle = function(angle, half)
 end
 
 KBEngineLua.InitEngine = function()
-	this._networkInterface = KBEngine.NetworkInterface.New();
+	this._networkInterface = KBEngine.NetworkInterface();
 	KBEngineLua.Message.bindFixedMessage();
 	this._persistentInfos = KBEngineLua.PersistentInfos:New(UnityEngine.Application.persistentDataPath);
 	FixedUpdateBeat:Add(this.process, this);
@@ -171,22 +171,22 @@ KBEngineLua.importMessagesFromMemoryStream = function(loginapp_clientMessages, b
 	this.resetMessages();
 	
 	this.loadingLocalMessages_ = true;
-	local stream = KBEngine.MemoryStream.New();
+	local stream = KBEngine.MemoryStream();
 	stream:append(loginapp_clientMessages, 0, loginapp_clientMessages.Length);
 	this.currserver = "loginapp";
 	this.onImportClientMessages(stream);
 
-	stream = KBEngine.MemoryStream.New();
+	stream = KBEngine.MemoryStream();
 	stream:append(baseapp_clientMessages, 0, baseapp_clientMessages.Length);
 	this.currserver = "baseapp";
 	this.onImportClientMessages(stream);
 	this.currserver = "loginapp";
 
-	stream = KBEngine.MemoryStream.New();
+	stream = KBEngine.MemoryStream();
 	stream:append(serverErrorsDescr, 0, serverErrorsDescr.Length);
 	this.onImportServerErrorsDescr(stream);
 		
-	stream = KBEngine.MemoryStream.New();
+	stream = KBEngine.MemoryStream();
 	stream:append(entitydefMessages, 0, entitydefMessages.Length);
 	this.onImportClientEntityDef(stream);
 
@@ -657,7 +657,7 @@ KBEngineLua.onUpdatePropertys_ = function(eid, stream)
 			return;
 		end
 		
-		local stream1 = KBEngine.MemoryStream.New();
+		local stream1 = KBEngine.MemoryStream();
 		stream1:copy(stream);
 		stream1.rpos = stream1.rpos - 4;--让出一个id
 
@@ -1656,7 +1656,7 @@ KBEngineLua.login_baseapp = function(noconnect)
 	if(noconnect) then
 		--Event.fireOut("onLoginBaseapp", new object[]{});
 		this._networkInterface:reset();
-		this._networkInterface = KBEngine.NetworkInterface.New();
+		this._networkInterface = KBEngine.NetworkInterface();
 		this._networkInterface:connectTo(this.baseappIP, this.baseappPort, this.onConnectTo_baseapp_callback, nil);
 	else
 		local bundle = KBEngineLua.Bundle:New();
@@ -1785,7 +1785,7 @@ KBEngineLua.reset = function()
 	this.bufferedCreateEntityMessage = {};
 
 	this._networkInterface:reset();
-	this._networkInterface = KBEngine.NetworkInterface.New();
+	this._networkInterface = KBEngine.NetworkInterface();
 
 	this._lastTickTime = os.clock();
 	this._lastTickCBTime = os.clock();
@@ -1876,7 +1876,7 @@ end
 
 ----设置新密码，通过baseapp， 必须玩家登录在线操作所以是baseapp。
 
-KBEngineLua.newPassword = function(old_password, new_password)
+KBEngineLuaPassword = function(old_password, new_password)
 	local bundle = KBEngineLua.Bundle:New();
 	bundle:newMessage(KBEngineLua.messages["Baseapp_reqAccountNewPassword"]);
 	bundle:writeInt32(this.entity_id);
